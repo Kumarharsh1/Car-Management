@@ -29,3 +29,8 @@ buildNumber.properties
 .project
 .settings/
 .vscode/
+
+# Docker
+Dockerfile
+.dockerignore
+*.jar
