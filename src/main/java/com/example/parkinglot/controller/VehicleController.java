@@ -3,37 +3,76 @@ package com.example.parkinglot.controller;
 import com.example.parkinglot.dao.VehicleDAO;
 import com.example.parkinglot.model.Vehicle;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/vehicle")
+@RequestMapping("/api/vehicles")  // ✅ Changed to PLURAL for REST standard
+@CrossOrigin(origins = "*")  // ✅ CORS enabled for testing
 public class VehicleController {
 
     @Autowired
     private VehicleDAO vehicleDAO;
 
-    // ✅ Accept JSON body instead of query param
+    // ✅ Register a new vehicle
     @PostMapping
-    public Vehicle addVehicle(@RequestBody Vehicle vehicle) {
-        return vehicleDAO.save(vehicle);
+    public ResponseEntity<Vehicle> addVehicle(@RequestBody Vehicle vehicle) {
+        try {
+            Vehicle savedVehicle = vehicleDAO.save(vehicle);
+            return new ResponseEntity<>(savedVehicle, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // ✅ Get vehicle by license plate
     @GetMapping("/{plate}")
-    public Vehicle getVehicleByPlate(@PathVariable String plate) {
-        return vehicleDAO.findByLicensePlate(plate);
+    public ResponseEntity<Vehicle> getVehicleByPlate(@PathVariable String plate) {
+        Vehicle vehicle = vehicleDAO.findByLicensePlate(plate);
+        if (vehicle != null) {
+            return new ResponseEntity<>(vehicle, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
+    // ✅ Get all vehicles
     @GetMapping
-    public List<Vehicle> getAllVehicles() {
-        return vehicleDAO.findAll();
+    public ResponseEntity<List<Vehicle>> getAllVehicles() {
+        try {
+            List<Vehicle> vehicles = vehicleDAO.findAll();
+            
+            if (vehicles.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            
+            return new ResponseEntity<>(vehicles, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // ✅ Delete vehicle by license plate
+    @DeleteMapping("/{plate}")
+    public ResponseEntity<HttpStatus> deleteVehicle(@PathVariable String plate) {
+        try {
+            vehicleDAO.deleteByLicensePlate(plate);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // ✅ Health check endpoint
     @GetMapping("/health")
-    public String health() {
-        return "Backend is running! Time: " + new Date();
+    public ResponseEntity<String> health() {
+        return new ResponseEntity<>(
+            "Vehicle API is running! Time: " + new Date(), 
+            HttpStatus.OK
+        );
     }
 }
-
