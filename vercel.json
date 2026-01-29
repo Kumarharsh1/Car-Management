@@ -3,10 +3,17 @@
   "builds": [
     {
       "src": "pom.xml",
-      "use": "@vercel/java"
+      "use": "@vercel/java",
+      "config": {
+        "buildCommand": "mvn clean package -DskipTests"
+      }
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/target/parking-lot-api-1.0.0.jar"
+    },
     {
       "src": "/(.*)",
       "dest": "/target/parking-lot-api-1.0.0.jar"
