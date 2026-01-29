@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface VehicleDAO extends JpaRepository<Vehicle, Long> {
-    Vehicle findByLicensePlate(String plate);
+public interface VehicleDAO extends JpaRepository<Vehicle, String> {
+    Vehicle findByLicensePlate(String licensePlate);
 }
