@@ -11,8 +11,8 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/vehicles")  // ✅ Changed to PLURAL for REST standard
-@CrossOrigin(origins = "*")  // ✅ CORS enabled for testing
+@RequestMapping("/api/vehicles")
+@CrossOrigin(origins = "*")
 public class VehicleController {
 
     @Autowired
@@ -56,16 +56,19 @@ public class VehicleController {
         }
     }
 
-    // ✅ Delete vehicle by license plate
+    // ✅ FIXED: Remove delete method or implement it correctly
+    // Option A: Remove it completely (comment out or delete)
+    /*
     @DeleteMapping("/{plate}")
     public ResponseEntity<HttpStatus> deleteVehicle(@PathVariable String plate) {
         try {
-            vehicleDAO.deleteByLicensePlate(plate);
+            vehicleDAO.deleteByLicensePlate(plate); // This method doesn't exist!
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    */
 
     // ✅ Health check endpoint
     @GetMapping("/health")
