@@ -1,11 +1,16 @@
-package com.example.parkinglot.controller;
+﻿package com.example.parkinglot.controller;
 
 import com.example.parkinglot.dao.VehicleDAO;
+import java.util.Date;
 import com.example.parkinglot.model.Vehicle;
+import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Date;
 import org.springframework.web.bind.annotation.*;
+import java.util.Date;
 
 import java.util.List;
+import java.util.Date;
 
 @RestController
 @RequestMapping("/api/vehicle")
@@ -29,4 +34,15 @@ public class VehicleController {
     public List<Vehicle> getAllVehicles() {
         return vehicleDAO.findAll();
     }
+
+    @GetMapping("/health")
+
+    public String health() {
+
+        return "Backend is running! Time: " + new Date();
+
+    }
+
+
 }
+
