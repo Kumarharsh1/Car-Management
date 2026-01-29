@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "src/main/resources/templates/index.html", "use": "@vercel/static" },
+    { "src": "src/main/resources/static/*", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/", "dest": "src/main/resources/templates/index.html" },
+    { "src": "/style.css", "dest": "src/main/resources/static/style.css" },
+    { "src": "/favicon.ico", "dest": "src/main/resources/static/favicon.ico" }
+  ]
+}

@@ -1,0 +1,12 @@
+com\example\parkinglot\ParkingLotApplication.class
+com\example\parkinglot\controller\VehicleController.class
+com\example\parkinglot\dao\TransactionDAO.class
+com\example\parkinglot\controller\WebController.class
+com\example\parkinglot\controller\ParkingServiceController.class
+com\example\parkinglot\model\Slot.class
+com\example\parkinglot\model\Vehicle.class
+com\example\parkinglot\dao\VehicleDAO.class
+com\example\parkinglot\dao\SlotDAO.class
+com\example\parkinglot\config\DataInitializer.class
+com\example\parkinglot\service\ParkingService.class
+com\example\parkinglot\model\Transaction.class
