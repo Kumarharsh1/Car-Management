@@ -10,9 +10,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // For testing, allow all origins:
+                // ✅ For testing, allow all origins:
                 .allowedOrigins("*")
-                // You can restrict later to only your frontend domain:
+                // 🔒 For production, restrict only to your frontend domain:
                 // .allowedOrigins("https://car-management-eosin-nine.vercel.app")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
