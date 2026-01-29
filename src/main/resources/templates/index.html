@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -265,8 +265,8 @@
         h2 { font-size: 1.3rem; }
       }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container">
       <div class="header">
         <h1>🚗 Parking Lot Management System</h1>
@@ -290,21 +290,17 @@
         <!-- Registered Vehicles -->
         <div class="section">
           <h2>Registered Vehicles</h2>
-          <div th:if="${vehicles.isEmpty()}" class="empty">
+          <div id="vehiclesEmpty" class="empty">
             No vehicles registered yet.
           </div>
-          <table th:unless="${vehicles.isEmpty()}">
+          <table id="vehiclesTable" style="display: none;">
             <thead>
               <tr>
                 <th>License Plate</th>
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody>
-              <tr th:each="v : ${vehicles}">
-                <td th:text="${v.licensePlate}" style="font-weight: 600;"></td>
-                <td style="color: #2e7d32;">Active</td>
-              </tr>
+            <tbody id="vehiclesBody">
             </tbody>
           </table>
         </div>
@@ -312,16 +308,10 @@
         <!-- Parking Slots -->
         <div class="section">
           <h2>Parking Slots Status</h2>
-          <div th:if="${slots.isEmpty()}" class="empty">
+          <div id="slotsEmpty" class="empty">
             No parking slots available.
           </div>
-          <div th:unless="${slots.isEmpty()}" class="slot-grid">
-            <div th:each="slot : ${slots}" 
-                 th:class="${'slot ' + (slot.occupied ? 'occupied' : 'free')}">
-              <div class="slot-number" th:text="${slot.slotNumber}"></div>
-              <div class="slot-status" th:text="${slot.occupied ? 'OCCUPIED' : 'FREE'}"></div>
-              <div class="slot-plate" th:if="${slot.occupied}" th:text="${slot.vehiclePlate}"></div>
-            </div>
+          <div id="slotGrid" class="slot-grid" style="display: none;">
           </div>
         </div>
 
@@ -349,10 +339,10 @@
         <!-- Transaction History -->
         <div class="section">
           <h2>Parking History & Billing</h2>
-          <div th:if="${transactions.isEmpty()}" class="empty">
+          <div id="transactionsEmpty" class="empty">
             No parking transactions yet.
           </div>
-          <table th:unless="${transactions.isEmpty()}">
+          <table id="transactionsTable" style="display: none;">
             <thead>
               <tr>
                 <th>Vehicle</th>
@@ -361,13 +351,7 @@
                 <th>Charges (₹)</th>
               </tr>
             </thead>
-            <tbody>
-              <tr th:each="txn : ${transactions}">
-                <td th:text="${txn.vehiclePlate}" style="font-weight: 600;"></td>
-                <td th:text="${#temporals.format(txn.entryTime, 'dd/MM HH:mm')}"></td>
-                <td th:text="${txn.exitTime != null ? #temporals.format(txn.exitTime, 'dd/MM HH:mm') : 'Parked'}"></td>
-                <td style="color: #2e7d32; font-weight: 600;" th:text="${txn.charges != null ? '₹' + txn.charges : '-'}"></td>
-              </tr>
+            <tbody id="transactionsBody">
             </tbody>
           </table>
         </div>
@@ -379,6 +363,8 @@
     </div>
 
     <script>
+      const BACKEND_URL = 'https://car-management-eosin-nine.vercel.app';
+      
       function showAlert(message, type = 'success') {
         const alertBox = document.getElementById('alertBox');
         const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
@@ -393,7 +379,7 @@
           return;
         }
         try {
-          const response = await fetch('/api/vehicle', {
+          const response = await fetch(`${BACKEND_URL}/api/vehicle`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'licensePlate=' + encodeURIComponent(plate)
@@ -401,7 +387,7 @@
           if (response.ok) {
             showAlert('Vehicle registered successfully', 'success');
             document.getElementById('licensePlate').value = '';
-            setTimeout(() => location.reload(), 500);
+            loadAllData();
           } else {
             showAlert('Error registering vehicle', 'error');
           }
@@ -417,7 +403,7 @@
           return;
         }
         try {
-          const response = await fetch('/api/parking/park', {
+          const response = await fetch(`${BACKEND_URL}/api/parking/park`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'plate=' + encodeURIComponent(plate)
@@ -426,7 +412,7 @@
           if (response.ok) {
             showAlert(message, 'success');
             document.getElementById('plateToPark').value = '';
-            setTimeout(() => location.reload(), 500);
+            loadAllData();
           } else {
             showAlert('Error: ' + message, 'error');
           }
@@ -442,7 +428,7 @@
           return;
         }
         try {
-          const response = await fetch('/api/parking/unpark', {
+          const response = await fetch(`${BACKEND_URL}/api/parking/unpark`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'plate=' + encodeURIComponent(plate)
@@ -451,7 +437,7 @@
           if (response.ok) {
             showAlert(message, 'success');
             document.getElementById('plateToUnpark').value = '';
-            setTimeout(() => location.reload(), 500);
+            loadAllData();
           } else {
             showAlert('Error: ' + message, 'error');
           }
@@ -459,179 +445,134 @@
           showAlert('Error: ' + e.message, 'error');
         }
       }
+
+      // Load all data on page load
+      async function loadAllData() {
+        try {
+          // Load vehicles
+          const vehiclesRes = await fetch(`${BACKEND_URL}/api/vehicles`);
+          if (vehiclesRes.ok) {
+            const vehicles = await vehiclesRes.json();
+            displayVehicles(vehicles);
+          }
+          
+          // Load parking slots
+          const slotsRes = await fetch(`${BACKEND_URL}/api/slots`);
+          if (slotsRes.ok) {
+            const slots = await slotsRes.json();
+            displaySlots(slots);
+          }
+          
+          // Load transactions
+          const transactionsRes = await fetch(`${BACKEND_URL}/api/transactions`);
+          if (transactionsRes.ok) {
+            const transactions = await transactionsRes.json();
+            displayTransactions(transactions);
+          }
+        } catch (e) {
+          console.error('Error loading data:', e);
+        }
+      }
+
+      function displayVehicles(vehicles) {
+        const container = document.getElementById('vehiclesBody');
+        const emptyMsg = document.getElementById('vehiclesEmpty');
+        const table = document.getElementById('vehiclesTable');
+        
+        if (vehicles.length === 0) {
+          emptyMsg.style.display = 'block';
+          table.style.display = 'none';
+          return;
+        }
+        
+        emptyMsg.style.display = 'none';
+        table.style.display = 'table';
+        container.innerHTML = '';
+        
+        vehicles.forEach(v => {
+          const row = `<tr>
+            <td style="font-weight: 600;">${v.licensePlate}</td>
+            <td style="color: #2e7d32;">Active</td>
+          </tr>`;
+          container.innerHTML += row;
+        });
+      }
+
+      function displaySlots(slots) {
+        const container = document.getElementById('slotGrid');
+        const emptyMsg = document.getElementById('slotsEmpty');
+        
+        if (slots.length === 0) {
+          emptyMsg.style.display = 'block';
+          container.style.display = 'none';
+          return;
+        }
+        
+        emptyMsg.style.display = 'none';
+        container.style.display = 'grid';
+        container.innerHTML = '';
+        
+        slots.forEach(slot => {
+          const slotClass = slot.occupied ? 'occupied' : 'free';
+          const status = slot.occupied ? 'OCCUPIED' : 'FREE';
+          const plate = slot.occupied ? `<div class="slot-plate">${slot.vehiclePlate}</div>` : '';
+          
+          const slotHtml = `<div class="slot ${slotClass}">
+            <div class="slot-number">${slot.slotNumber}</div>
+            <div class="slot-status">${status}</div>
+            ${plate}
+          </div>`;
+          
+          container.innerHTML += slotHtml;
+        });
+      }
+
+      function displayTransactions(transactions) {
+        const container = document.getElementById('transactionsBody');
+        const emptyMsg = document.getElementById('transactionsEmpty');
+        const table = document.getElementById('transactionsTable');
+        
+        if (transactions.length === 0) {
+          emptyMsg.style.display = 'block';
+          table.style.display = 'none';
+          return;
+        }
+        
+        emptyMsg.style.display = 'none';
+        table.style.display = 'table';
+        container.innerHTML = '';
+        
+        transactions.forEach(txn => {
+          const entryTime = new Date(txn.entryTime).toLocaleString('en-IN', {
+            day: '2-digit',
+            month: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          const exitTime = txn.exitTime 
+            ? new Date(txn.exitTime).toLocaleString('en-IN', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            : 'Parked';
+          
+          const charges = txn.charges ? `₹${txn.charges}` : '-';
+          
+          const row = `<tr>
+            <td style="font-weight: 600;">${txn.vehiclePlate}</td>
+            <td>${entryTime}</td>
+            <td>${exitTime}</td>
+            <td style="color: #2e7d32; font-weight: 600;">${charges}</td>
+          </tr>`;
+          container.innerHTML += row;
+        });
+      }
+
+      // Load data when page loads
+      window.onload = loadAllData;
     </script>
-  </body>
+</body>
 </html>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { 
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 2rem 1rem;
-      }
-      .container { 
-        max-width: 1000px; 
-        margin: 0 auto; 
-        background: white; 
-        border-radius: 12px; 
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        overflow: hidden;
-      }
-      .header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        text-align: center;
-      }
-      .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-      .header p { opacity: 0.9; }
-      .content { padding: 2rem; }
-      .section { margin-bottom: 2.5rem; }
-      h2 { 
-        color: #667eea; 
-        border-bottom: 3px solid #667eea; 
-        padding-bottom: 0.75rem; 
-        margin-bottom: 1.5rem;
-        font-size: 1.5rem;
-      }
-      .form-group {
-        background: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-      }
-      label { 
-        display: block; 
-        font-weight: 600; 
-        margin-bottom: 0.5rem;
-        color: #333;
-      }
-      input {
-        width: 100%;
-        padding: 0.75rem;
-        border: 2px solid #ddd;
-        border-radius: 6px;
-        font-size: 1rem;
-        transition: border-color 0.3s;
-      }
-      input:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-      }
-      .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-      }
-      @media (max-width: 600px) {
-        .form-row { grid-template-columns: 1fr; }
-      }
-      button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 0.85rem 1.75rem;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 1rem;
-        margin-top: 0.5rem;
-        transition: transform 0.2s, box-shadow 0.2s;
-      }
-      button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-      }
-      button:active { transform: translateY(0); }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-      }
-      th {
-        background: #667eea;
-        color: white;
-        padding: 1rem;
-        text-align: left;
-        font-weight: 600;
-      }
-      td {
-        padding: 1rem;
-        border-bottom: 1px solid #eee;
-      }
-      tr:hover { background: #f8f9fa; }
-      .empty {
-        text-align: center;
-        color: #999;
-        padding: 2rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-      }
-      .alert {
-        padding: 1rem;
-        border-radius: 6px;
-        margin-bottom: 1.5rem;
-        animation: slideIn 0.3s ease-out;
-      }
-      .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border-left: 4px solid #28a745;
-      }
-      .alert-error {
-        background: #f8d7da;
-        color: #721c24;
-        border-left: 4px solid #dc3545;
-      }
-      @keyframes slideIn {
-        from { transform: translateX(-20px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-      .slot-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 0.75rem;
-        margin-top: 1rem;
-      }
-      .slot {
-        padding: 1rem;
-        text-align: center;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: default;
-        transition: all 0.3s;
-      }
-      .slot.free {
-        background: #d4edda;
-        color: #155724;
-        border: 2px solid #28a745;
-      }
-      .slot.occupied {
-        background: #f8d7da;
-        color: #721c24;
-        border: 2px solid #dc3545;
-      }
-      .footer {
-        background: #f8f9fa;
-        padding: 1.5rem 2rem;
-        text-align: center;
-        color: #666;
-        border-top: 1px solid #ddd;
-        font-size: 0.9rem;
-      }
-      .footer a {
-        color: #667eea;
-        text-decoration: none;
-        font-weight: 600;
-      }
-      .footer a:hover { text-decoration: underline; }
-      .input-group {
-        display: flex;
-        gap: 0.5rem;
-      }
-      .input-group input { margin: 0; margin-top: 0.5rem; }
-      .input-group button { margin: 0; margin-top: 0.5rem; flex-shrink: 0; width: auto; }
-    </style>
-  </html>
