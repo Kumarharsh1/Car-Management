@@ -12,6 +12,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 // For testing, allow all origins:
                 .allowedOrigins("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
+                // You can restrict later to only your frontend domain:
+                // .allowedOrigins("https://car-management-eosin-nine.vercel.app")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*");
     }
 }
