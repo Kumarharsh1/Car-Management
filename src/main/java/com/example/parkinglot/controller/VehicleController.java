@@ -1,4 +1,4 @@
-package com.example.parkinglot.controller;
+﻿package com.example.parkinglot.controller;
 
 import com.example.parkinglot.dao.VehicleDAO;
 import com.example.parkinglot.model.Vehicle;
@@ -8,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
-@CrossOrigin(origins = "*")
 public class VehicleController {
     
     @Autowired
@@ -29,6 +28,6 @@ public class VehicleController {
     
     @GetMapping("/health")
     public String health() {
-        return "Vehicle API is working!";
+        return "Backend API is working!";
     }
 }
