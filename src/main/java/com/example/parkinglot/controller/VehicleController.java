@@ -1,4 +1,4 @@
-﻿package com.example.parkinglot.controller;
+package com.example.parkinglot.controller;
 
 import com.example.parkinglot.dao.VehicleDAO;
 import com.example.parkinglot.model.Vehicle;
